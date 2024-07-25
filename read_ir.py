@@ -34,10 +34,7 @@ class SerialConsole(cmd.Cmd):
     def do_ir(self, arg):
         'Get IR data in ascii format: IR'
         self.send_command("IR")
-        result = serial.readline()
-        while serial.in_waiting > 0:
-            print(result)
-            result = serial.readline()
+        self.print_while_not_empty_line()
 
     def send_command(self, command):
         serial.write(f"{command}\n".encode('ascii'))
@@ -58,10 +55,7 @@ class SerialConsole(cmd.Cmd):
     def do_commands(self, arg):
         'Get list of available commands: HELP'
         self.send_command("HELP")
-        result = serial.readline()
-        while serial.in_waiting > 0:
-            print(result)
-            result = serial.readline()
+        self.print_while_not_empty_line()
 
     def do_reset(self, arg):
         'Reset input line'
@@ -84,6 +78,13 @@ class SerialConsole(cmd.Cmd):
 
     def close(self):
         pass
+
+    @staticmethod
+    def print_while_not_empty_line():
+        result = ""
+        while result != b"\r\n":
+            result = serial.readline()
+            print(result)
 
 
 if __name__ == '__main__':
