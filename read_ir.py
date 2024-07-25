@@ -33,31 +33,31 @@ class SerialConsole(cmd.Cmd):
 
     def do_ir(self, arg):
         'Get IR data in ascii format: IR'
-        serial.write("IR\n".encode('ascii'))
-        serial.flush()
+        self.send_command("IR")
         result = serial.readline()
         while serial.in_waiting > 0:
             print(result)
             result = serial.readline()
 
+    def send_command(self, command):
+        serial.write(f"{command}\n".encode('ascii'))
+        serial.flush()
+
     def do_irx(self, arg):
         'Get IRX data in base64 format: IRX'
-        serial.write("IRX\n".encode('ascii'))
-        serial.flush()
+        self.send_command("IRX")
         result = serial.readline()
         print(result)
 
     def do_ping(self, arg):
         'Ping the serial port: PING'
-        serial.write("PING\n".encode('ascii'))
-        serial.flush()
+        self.send_command("PING")
         result = serial.readline()
         print(result)
 
     def do_commands(self, arg):
         'Get list of available commands: HELP'
-        serial.write("HELP\n".encode('ascii'))
-        serial.flush()
+        self.send_command("HELP")
         result = serial.readline()
         while serial.in_waiting > 0:
             print(result)
