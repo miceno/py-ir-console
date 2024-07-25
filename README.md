@@ -1,2 +1,2 @@
 # py-ir-console
-A console to send and read commands from a IR arm
+A console to send commands and read data from a IR arm.
