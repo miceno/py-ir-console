@@ -1,13 +1,15 @@
-import cmd
-from serial import Serial
-
 import argparse
+import cmd
+from time import sleep
 
+from serial import Serial
 from serial.serialutil import SerialException
+
+retry_timeout = 2
 
 
 class SerialConsole(cmd.Cmd):
-    intro = 'Welcome to the serial console shell.   Type help or ? to list commands.\n'
+    intro = 'Welcome to the serial console shell. Type help or ? to list commands.\n'
     prompt = '(serial) '
 
     # READ: Read summarized sensor data
@@ -74,9 +76,7 @@ class SerialConsole(cmd.Cmd):
     def do_bye(self, arg):
         'Stop, close the serial window, and exit:  BYE'
         print('Thank you for using Serial')
-        self.close()
         return True
-
 
     def precmd(self, line):
         line = line.lower()
@@ -93,16 +93,19 @@ if __name__ == '__main__':
     # Adding optional argument
     parser.add_argument("-p", "--port", help="Serial port path")
     parser.add_argument("-b", "--baud-rate", default=74880, help="Serial port baud rate")
-    parser.add_argument("-t", "--timeout", type=float, default=5.0, help="Serial port read timeout in seconds")
+    parser.add_argument("-t", "--timeout", type=float, default=5.0,
+                        help="Serial port read timeout in seconds")
 
     # Read arguments from command line
     args = parser.parse_args()
 
-    with Serial(args.port, args.baud_rate, timeout=args.timeout) as serial:
+    while True:
         try:
-            SerialConsole().cmdloop()
+            with Serial(args.port, args.baud_rate, timeout=args.timeout) as serial:
+                SerialConsole().cmdloop()
+                exit()
         except SerialException as e:
             print(f"error {e}")
-            serial.close()
-            serial.open()
+            print(f"Retrying in {retry_timeout} seconds...")
+            sleep(retry_timeout)
             pass
