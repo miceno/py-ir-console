@@ -1,6 +1,7 @@
 import argparse
 import cmd
 from time import sleep
+import datetime
 
 from serial import Serial
 from serial.serialutil import SerialException
@@ -11,6 +12,12 @@ retry_timeout = 2
 class SerialConsole(cmd.Cmd):
     intro = 'Welcome to the serial console shell. Type help or ? to list commands.\n'
     prompt = '(serial) '
+    params = dict(show_timestamp=True, delimiter=":")
+
+    def _print(self, msg):
+        if self.params['show_timestamp']:
+            print(datetime.datetime.now(), self.params['delimiter'], end='', sep='')
+        print(msg)
 
     # READ: Read summarized sensor data
     # IR: Return IR data as a stream of float values
@@ -26,13 +33,15 @@ class SerialConsole(cmd.Cmd):
     # ----- basic turtle commands -----
     def do_read(self, arg):
         'Read data from the serial: READ'
+        self._print("READ")
         serial.write("READ\n".encode('ascii'))
         serial.flush()
         result = serial.readline()
-        print(result)
+        self._print(result)
 
     def do_ir(self, arg):
         'Get IR data in ascii format: IR'
+        self._print("IR")
         self.send_command("IR")
         self.print_while_not_empty_line()
 
@@ -42,15 +51,16 @@ class SerialConsole(cmd.Cmd):
 
     def do_irx(self, arg):
         'Get IRX data in base64 format: IRX'
+        self._print("IRX")
         self.send_command("IRX")
         result = serial.readline()
-        print(result)
+        self._print(result)
 
     def do_ping(self, arg):
         'Ping the serial port: PING'
         self.send_command("PING")
         result = serial.readline()
-        print(result)
+        self._print(result)
 
     def do_commands(self, arg):
         'Get list of available commands: HELP'
@@ -59,17 +69,17 @@ class SerialConsole(cmd.Cmd):
 
     def do_reset(self, arg):
         'Reset input line'
-        print('Reset input line')
+        self._print('Reset input line')
         serial.reset_input_buffer()
 
     def do_status(self, arg):
         'Show serial port status'
-        print('Serial port status:', end='')
-        print(serial.get_settings())
+        self._print('Serial port status:', end='')
+        self._print(serial.get_settings())
 
     def do_bye(self, arg):
         'Stop, close the serial window, and exit:  BYE'
-        print('Thank you for using Serial')
+        self._print('Thank you for using Serial')
         return True
 
     def precmd(self, line):
@@ -79,12 +89,11 @@ class SerialConsole(cmd.Cmd):
     def close(self):
         pass
 
-    @staticmethod
-    def print_while_not_empty_line():
+    def print_while_not_empty_line(self):
         result = ""
         while result != b"\r\n":
             result = serial.readline()
-            print(result)
+            self._print(result)
 
 
 if __name__ == '__main__':
