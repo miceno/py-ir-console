@@ -1,4 +1,5 @@
 import argparse
+import ast
 import cmd
 from time import sleep
 import datetime
@@ -29,6 +30,7 @@ class SerialConsole(cmd.Cmd):
     # START: Start data collection
     # STOP: Stop data collection
     # HELP: Show available commands
+    # IRCAL: Set calibration values as floats.
 
     # ----- basic turtle commands -----
     def do_read(self, arg):
@@ -82,12 +84,11 @@ class SerialConsole(cmd.Cmd):
         self._print('Thank you for using Serial')
         return True
 
-    def precmd(self, line):
-        line = line.lower()
-        return line
-
-    def close(self):
-        pass
+    def do_set(self, arg):
+        'Set param to a value'
+        (param, value) = arg.split(" ")
+        self.params[param] = ast.literal_eval(value)
+        self._print(self.params)
 
     def print_while_not_empty_line(self):
         result = ""
